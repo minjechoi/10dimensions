@@ -74,19 +74,19 @@ def splitToTrainTest():
         # save to tsv files
         out = []
         for i,(X_,y_) in enumerate(zip(X_tr,y_tr)):
-            out.append((y_,X_))
+            out.append((y_,'a',X_))
         df2 = pd.DataFrame(out)
         df2.to_csv(join(save_dir,'train.tsv'),sep='\t',header=None)
 
         out = []
         for i,(X_,y_) in enumerate(zip(X_t,y_t)):
-            out.append((y_,X_))
+            out.append((y_,'a',X_))
         df2 = pd.DataFrame(out)
         df2.to_csv(join(save_dir,'test.tsv'),sep='\t',header=None)
 
         out = []
         for i,(X_,y_) in enumerate(zip(X_v,y_v)):
-            out.append((y_,X_))
+            out.append((y_,'a',X_))
         df2 = pd.DataFrame(out)
         df2.to_csv(join(save_dir,'dev.tsv'),sep='\t',header=None)
     return
