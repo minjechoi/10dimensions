@@ -11,7 +11,9 @@ from os.path import join
 import sys
 import pickle
 import csv
-from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM, BertForSequenceClassification
+from transformers import BertTokenizer,BertForSequenceClassification
+from transformers.optimization import AdamW
+# from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM, BertForSequenceClassification
 from pytorch_pretrained_bert.optimization import BertAdam
 from tqdm import tqdm_notebook, trange
 from multiprocessing import Pool, cpu_count
@@ -34,6 +36,7 @@ def train(dim):
     EVAL_BATCH_SIZE = 8
     LEARNING_RATE = 2e-5
     NUM_TRAIN_EPOCHS = 4
+    NUM_TRAIN_EPOCHS = 1
     RANDOM_SEED = 42
     GRADIENT_ACCUMULATION_STEPS = 1
     WARMUP_PROPORTION = 0.1
@@ -60,12 +63,12 @@ def train(dim):
             train_features = pickle.load(f)
     else:
         # Load pre-trained model tokenizer (vocabulary)
-        tokenizer = BertTokenizer.from_pretrained('bert-base-cased', do_lower_case=False)
+        tokenizer = BertTokenizer.from_pretrained(BERT_MODEL, do_lower_case=False)
         label_map = {label: i for i, label in enumerate(label_list)}
         train_examples_for_processing = [(example, label_map, MAX_SEQ_LENGTH, tokenizer, OUTPUT_MODE) for example in
                                          train_examples]
-        process_count = cpu_count() - 1
-        process_count = 30
+        process_count = min(cpu_count() - 1,8)
+        # process_count = 30
         if __name__ == '__main__':
             print(f'Preparing to convert {train_examples_len} examples..')
             print(f'Spawning {process_count} processes..')
@@ -75,8 +78,7 @@ def train(dim):
         with open(join(DATA_DIR, "train_features.pkl"), "wb") as f:
             pickle.dump(train_features, f)
 
-    # model = BertForSequenceClassification.from_pretrained(BERT_MODEL, cache_dir=CACHE_DIR, num_labels=num_labels)
-    model = BertForSequenceClassification.from_pretrained(BERT_MODEL, num_labels=num_labels)
+    model = BertForSequenceClassification.from_pretrained(BERT_MODEL,cache_dir=CACHE_DIR, num_labels=num_labels)
     model.to(device)
     param_optimizer = list(model.named_parameters())
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
@@ -84,10 +86,13 @@ def train(dim):
         {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
         {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
-    optimizer = BertAdam(optimizer_grouped_parameters,
-                         lr=LEARNING_RATE,
-                         warmup=WARMUP_PROPORTION,
-                         t_total=num_train_optimization_steps)
+    optimizer = AdamW(params=optimizer_grouped_parameters,
+                      lr=LEARNING_RATE,correct_bias=False)
+
+    # optimizer = BertAdam(optimizer_grouped_parameters,
+    #                      lr=LEARNING_RATE,
+    #                      warmup=WARMUP_PROPORTION,
+    #                      t_total=num_train_optimization_steps)
     global_step = 0
     nb_tr_steps = 0
     tr_loss = 0
@@ -147,8 +152,10 @@ def train(dim):
     output_config_file = os.path.join(OUTPUT_DIR, CONFIG_NAME)
 
     torch.save(model_to_save.state_dict(), output_model_file)
-    model_to_save.config.to_json_file(output_config_file)
+
     tokenizer.save_vocabulary(OUTPUT_DIR)
+    print(model.config.to_json_string())
+    model_to_save.config.to_json_file(output_config_file)
 
     return
 
