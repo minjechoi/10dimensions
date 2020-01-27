@@ -4,7 +4,7 @@ Description: contains the code for training the BERT model for each dimension
 
 import logging
 import torch
-from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler, TensorDataset)
+from torch.utils.data import (DataLoader, RandomSampler, TensorDataset)
 from torch.nn import CrossEntropyLoss, MSELoss
 import os
 from os.path import join
@@ -31,12 +31,9 @@ def train(dim):
 
     MAX_SEQ_LENGTH = 20
     TRAIN_BATCH_SIZE = 24
-    EVAL_BATCH_SIZE = 8
     LEARNING_RATE = 2e-5
     NUM_TRAIN_EPOCHS = 4
-    RANDOM_SEED = 42
     GRADIENT_ACCUMULATION_STEPS = 1
-    WARMUP_PROPORTION = 0.1
     OUTPUT_MODE = 'classification'
     CONFIG_NAME = "config.json"
     WEIGHTS_NAME = "pytorch_model.bin"
