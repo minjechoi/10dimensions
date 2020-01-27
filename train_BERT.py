@@ -158,4 +158,17 @@ def train(dim):
     return
 
 if __name__=='__main__':
-    train('conflict')
+
+    dims = ['social_support',
+            'conflict',
+            'trust',
+            'fun',
+            'similarity',
+            'identity',
+            'respect',
+            'romance',
+            'knowledge',
+            'power']
+
+    for dim in dims:
+        train(dim)
