@@ -13,8 +13,6 @@ import pickle
 import csv
 from transformers import BertTokenizer,BertForSequenceClassification
 from transformers.optimization import AdamW
-# from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM, BertForSequenceClassification
-from pytorch_pretrained_bert.optimization import BertAdam
 from tqdm import tqdm_notebook, trange
 from multiprocessing import Pool, cpu_count
 
@@ -122,7 +120,8 @@ def train(dim):
             batch = tuple(t.to(device) for t in batch)
             input_ids, input_mask, segment_ids, label_ids = batch
 
-            logits = model(input_ids, segment_ids, input_mask, labels=None)
+            outputs = model(input_ids, segment_ids, input_mask, labels=None)
+            logits = outputs[0]
 
             if OUTPUT_MODE == "classification":
                 loss_fct = CrossEntropyLoss()
@@ -156,7 +155,6 @@ def train(dim):
     tokenizer.save_vocabulary(OUTPUT_DIR)
     print(model.config.to_json_string())
     model_to_save.config.to_json_file(output_config_file)
-
     return
 
 if __name__=='__main__':
