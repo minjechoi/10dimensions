@@ -6,11 +6,14 @@ Description: contains code for
 """
 import re
 import os
+import numpy as np
 import sys
 from os.path import join
 from nltk import word_tokenize
 from sklearn.model_selection import train_test_split
 import pandas as pd
+from nltk.tokenize import TweetTokenizer
+tokenize = TweetTokenizer().tokenize
 
 def preprocessText(text):
     """
@@ -18,10 +21,11 @@ def preprocessText(text):
     :param text: the input string to be preprocessed
     :return: a cleaned version of the same text
     """
-    text = re.sub(pattern=r'\b[A-Za-z.\s]+:', string=text, repl=' ')  # remove characters - for round3
+    # text = re.sub(pattern=r'\b[A-Za-z.\s]+:', string=text, repl=' ')  # remove characters - for round3
     text = re.sub(pattern=r'\<(.*?)\>', string=text, repl=' ')  # remove html tags - for round4
     text = re.sub(pattern=r'/?&gt;', string=text, repl=' ')  # remove html tags - for round4
     text = text.replace('"', '').strip()
+    text = ' '.join(tokenize(text))
     return text
 
 def splitToTrainTest():
@@ -90,6 +94,54 @@ def splitToTrainTest():
         df2 = pd.DataFrame(out)
         df2.to_csv(join(save_dir,'dev.tsv'),sep='\t',header=None)
     return
+
+def padBatch(list_of_list_of_arrays,max_seq=None):
+    """
+    A function that returns a numpy array that creates a B @ (seq x dim) sized-tensor
+    :param list_of_list_of_arrays:
+    :return:
+    """
+
+    if max_seq:
+        list_of_list_of_arrays = [X[:max_seq] for X in list_of_list_of_arrays]
+
+
+    # get max length
+    mx = max(len(V) for V in list_of_list_of_arrays)
+
+    # get array dimension by looking at the 1st sample
+    array_dimensions = [len(V[0]) for V in list_of_list_of_arrays]
+    assert min(array_dimensions)==max(array_dimensions), "Dimension sizes do not match within the samples!"
+    dim_size = array_dimensions[0]
+
+    # get empty array to put in
+    dummy_arr = [0]*dim_size
+
+    # create additional output
+    out = []
+    for V in list_of_list_of_arrays:
+        V = V.tolist()
+        out.append(V+[dummy_arr]*(mx-len(V)))
+
+    # return
+    return np.array(out)
+
+def batchify(X, y, batch_size=50):
+    """
+    Given a list of data samples, returns them in a batch
+    :param X:
+    :param y:
+    :param batch_size:
+    :return:
+    """
+    out = []
+    n_batches = int(np.ceil(len(X)/batch_size))
+    for i in range(n_batches):
+        X_b = X[i*batch_size:(i+1)*batch_size]
+        y_b = y[i*batch_size:(i+1)*batch_size]
+        out.append((X_b,y_b))
+
+    return out
 
 if __name__=='__main__':
     splitToTrainTest()
