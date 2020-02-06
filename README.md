@@ -1,9 +1,12 @@
 # 10dimensions
 Public repository containing the dataset and code for training the models in "Ten Social Dimensions of Conversations and Relationships" (WWW'20)
 
-Steps
+### Preprocessing dataset
 
 1. Run preprocess_data.py to transform the existing dataset in data/labeled-dataset.tsv to a BERT-friendly form
+
+### Using pretrained models
+- The instructions for downloading and using pretrained models can be found at [link](weights/README.md)
 
 for using BERT
 
