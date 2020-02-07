@@ -20,7 +20,7 @@ def loadDatasetForLSTM(dim,ver='train',data_dir = 'data/'):
     filename = join(data_dir,dim,'%s.tsv'%ver)
     assert os.path.exists(filename),"Error: file %s doesn't exist"%filename
     data = {0: [], 1: []}
-    with open(filename,encoding='uff-8',errors='ignore') as f:
+    with open(filename,encoding='utf-8',errors='ignore') as f:
         for line in f:
             line = line.strip().split('\t')
             text = preprocessText(line[-1].lower())
