@@ -2,14 +2,15 @@
 Public repository containing the dataset and code for training the models in "Ten Social Dimensions of Conversations and Relationships" (WWW'20)
 
 ### Requirements for code
-The requirements can be found [here](requirements.txt)
+- The requirements can be found [here](requirements.txt)
+- Our LSTM models are based on pretrained GloVe word embeddings. Please refer to the instructions for setting the word embeddings [here](weights/embeddings/README.md)
 
 ### Preprocessing dataset
 
 1. Run preprocess_data.py to transform the existing dataset in data/labeled-dataset.tsv to a BERT-friendly form
 
 ### Using pretrained models
-- The instructions for downloading and using pretrained models can be found at [link](weights/README.md)
+- The instructions for downloading and using pretrained models can be found [here](weights/README.md)
 - Once the pretrained weights are placed in the right directories, you can test the models on new sentences using the 'Test BERT' and 'Test LSTM' jupyter notebooks.
 
 ### Training your own models
