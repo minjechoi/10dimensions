@@ -62,7 +62,6 @@ def train(dim):
 
     # load datasets
     X_tr,y_tr = loadDatasetForLSTM(dim,'train')
-    # X_t,y_t = loadDatasetForLSTM(dim,'test')
     X_d,y_d = loadDatasetForLSTM(dim,'dev')
 
     # load model and settings for training
@@ -89,14 +88,6 @@ def train(dim):
         X_tr, y_tr = shuffle(X_tr, y_tr)
         tr_batches = batchify(X_tr, y_tr, batch_size)
         for X_b, y_b in tr_batches:
-            # cn = Counter(y_b)
-            # if cn[1] > 0:
-            #     ratio = cn[0] / cn[1]
-            # else:
-            #     ratio = len(y_b)
-            # weights = torch.tensor([ratio if x == 1 else 1 for x in y_b]).float()
-            # if is_cuda:
-            #     weights = weights.cuda()
             inputs = torch.tensor(padBatch([em.obtain_vectors_from_sentence(sent, True) for sent in X_b])).float()
             targets = torch.tensor(y_b, dtype=torch.float32)
             if is_cuda:
@@ -128,7 +119,6 @@ def train(dim):
             # if current round is better than the previous round
             best_state = model.state_dict() # save this model
             torch.save(best_state, join(save_dir,'best-weights.pth'))
-            # print(model.state_dict()['lstm.weight_ih_l0'][0][:5])
             print("Updated model")
             old_val = current_loss
             cnt_decrease=0
