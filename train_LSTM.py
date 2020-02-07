@@ -38,65 +38,10 @@ def loadDatasetForLSTM(dim,ver='train',data_dir = 'data/'):
     return X,y
 
 
-def word2vec4gensim(file_dir):
-    """
-
-    :param file_dir:
-    :return:
-    """
-
-    from gensim.models import KeyedVectors
-
-    # load the vectors on gensim
-    assert file_dir.endswith('.bin')|file_dir.endswith('.vec'), "Input file should be either a .bin or .vec"
-    model = KeyedVectors.load_word2vec_format(file_dir,binary=file_dir.endswith('.bin'))
-    # save only the .wv part of the model, it's much faster
-    new_file_dir = file_dir.replace('.bin','.wv')
-    model.wv.save(new_file_dir)
-    # delete the original .bin file
-    os.remove(file_dir)
-    print("Removed previous file ",file_dir)
-
-    # try loading the new file
-    model = KeyedVectors.load(new_file_dir, mmap='r')
-    print("Loaded in gensim! %d word embeddings, %d dimensions"%(len(model.vocab),len(model['a'])))
-    return
-
-def glove4gensim(file_dir):
-    """
-    A function that modifies the pretrained GloVe file so it could be integrated with this framework
-    [Note] You can download the vectors used in this code at
-    https://nlp.stanford.edu/projects/glove/ (make sure to unzip the files)
-    :param file_dir: file directory of the downloaded file
-    e.g., file_dir='/home/USERNAME/embeddings/word2vec/GoogleNews-vectors-negative300.bin'
-    :return: None
-    """
-
-    from gensim.models import KeyedVectors
-    from gensim.scripts.glove2word2vec import glove2word2vec
-
-    # load the vectors on gensim
-    # assert file_dir.endswith('.txt'), "For downloaded GloVe, the input file should be a .txt"
-    # glove2word2vec(file_dir,file_dir.replace('.txt','.vec'))
-    # file_dir = file_dir.replace('.txt','.vec')
-    model = KeyedVectors.load_word2vec_format(file_dir,binary=file_dir.endswith('.bin'))
-    # save only the .wv part of the model, it's much faster
-    new_file_dir = file_dir.replace('.vec','.wv')
-    model.wv.save(new_file_dir)
-    # delete the original .bin file
-    os.remove(file_dir)
-    print("Removed previous file ",file_dir)
-
-    # try loading the new file
-    model = KeyedVectors.load(new_file_dir, mmap='r')
-    print("Loaded in gensim! %d word embeddings, %d dimensions"%(len(model.vocab),len(model['a'])))
-    return
-
 def train(dim):
     import torch
     from torch import nn, optim
     import numpy as np
-    from collections import Counter
     from features import ExtractWordEmbeddings
     from preprocess_data import batchify,padBatch
     from models.lstm import LSTMClassifier
@@ -197,7 +142,6 @@ def train(dim):
 
 def test(dim):
     import torch
-    from torch import nn, optim
     import numpy as np
     from features import ExtractWordEmbeddings
     from preprocess_data import batchify,padBatch
@@ -236,9 +180,7 @@ def test(dim):
         targets = torch.tensor(y_b, dtype=torch.float32)
         if is_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
-        # print(inputs.size())
         outputs = model(inputs).tolist()
-        # print(outputs[-1],len(outputs))
         y_scores.extend(outputs)
     y_preds = np.array(np.array(y_scores)>=0.5,dtype=int)
     auc = roc_auc_score(y_true=y_t, y_score=y_scores)
