@@ -1,7 +1,49 @@
 import os
 from os.path import join
 from preprocess_data import preprocessText
+import argparse
 
+def main():
+    print('pid: ',os.getpid())
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--dims", default=None, help="Set to None (all dimensions by default), can be customized by selecting dimensions, with ',' signs")
+
+    parser.add_argument("--do_train", action='store_true', help="Whether to do training")
+    parser.add_argument("--do_eval", action='store_true', help="Whether to do validation")
+    parser.add_argument('--lr', type=float, default=0.001, help="Learning rate for LSTM model")
+    parser.add_argument('--hidden_dim', type=int, default=300, help="Size of hidden layer in LSTM model")
+    parser.add_argument('--max_epochs', type=int, default=100, help="The maximum number of epochs to run (allows early stopping)")
+
+    args = parser.parse_args()
+
+    # specify which dimensions
+    if args.dims:
+        dims = args.dims.split(',')
+
+    else:
+        dims = [
+            'social_support',
+            'conflict',
+            'trust',
+            'fun',
+            'similarity',
+            'identity',
+            'respect',
+            'romance',
+            'knowledge',
+            'power'
+            ]
+
+    # run train/test
+    for dim in dims:
+        if args.do_train:
+            train(dim, args)
+        if args.do_eval:
+            test(dim, args)
+
+    return
 
 def loadDatasetForLSTM(dim,ver='train',data_dir = 'data/'):
     """
@@ -38,7 +80,7 @@ def loadDatasetForLSTM(dim,ver='train',data_dir = 'data/'):
     return X,y
 
 
-def train(dim):
+def train(dim, args):
     import torch
     from torch import nn, optim
     import numpy as np
@@ -50,11 +92,11 @@ def train(dim):
 
     # hyperparameters
     embedding_dim = 300 # changes only with different word embeddings
-    hidden_dim = 300
-    max_epochs = 100
+    hidden_dim = args.hidden_dim
+    max_epochs = args.max_epochs
     is_cuda = True
     batch_size = 60
-    lr = 0.00001
+    lr = args.lr
     n_decreases = 10
     save_dir = 'weights/LSTM/%s'%dim
     if not os.path.exists(save_dir):
@@ -68,7 +110,7 @@ def train(dim):
     model = LSTMClassifier(embedding_dim=embedding_dim, hidden_dim=hidden_dim)
     if is_cuda:
         model.cuda()
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.AdamW(model.parameters(), lr=lr)
     start_dict = model.state_dict()
     flag = True
     old_val = np.inf # previous validation error
@@ -102,6 +144,7 @@ def train(dim):
         print("[Epoch %d] train loss: %1.3f" % (epoch, tr_loss))
 
         # validate
+        model.eval()
         current_loss = 0.0
         X_d, y_d = shuffle(X_d, y_d)
         val_batches = batchify(X_d, y_d, batch_size)
@@ -130,7 +173,7 @@ def train(dim):
             flag = False
     return
 
-def test(dim):
+def test(dim, args):
     import torch
     import numpy as np
     from features import ExtractWordEmbeddings
@@ -187,18 +230,4 @@ def test(dim):
 
 
 if __name__=='__main__':
-    dims = [
-            'social_support',
-            'conflict',
-            'trust',
-            'fun',
-            'similarity',
-            'identity',
-            'respect',
-            'romance',
-            'knowledge',
-            'power'
-            ]
-    for dim in dims:
-        train(dim=dim)
-        test(dim=dim)
+    main()
