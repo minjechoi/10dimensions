@@ -102,16 +102,20 @@ def train(dim, args):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    # load datasets
-    X_tr,y_tr = loadDatasetForLSTM(dim,'train')
+    """
+    Loading train / validation datasets
+    X_tr: a list of tokenized sentences
+    y_tr: a list of 0 and 1
+    """
+    X_tr,y_tr = loadDatasetForLSTM(dim,'train') # a list of tokenized sentences
     X_d,y_d = loadDatasetForLSTM(dim,'dev')
+
 
     # load model and settings for training
     model = LSTMClassifier(embedding_dim=embedding_dim, hidden_dim=hidden_dim)
     if is_cuda:
         model.cuda()
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    start_dict = model.state_dict()
     flag = True
     old_val = np.inf # previous validation error
     em = ExtractWordEmbeddings(emb_type='glove')
@@ -127,16 +131,25 @@ def train(dim, args):
             break
         # train
         model.train()
+        # for each iteration, shuffles X_tr and y_tr and puts them into batches
         X_tr, y_tr = shuffle(X_tr, y_tr)
         tr_batches = batchify(X_tr, y_tr, batch_size)
         for X_b, y_b in tr_batches:
+            # X_b is still a list of tokenized sentences (list of list of words)
+            optimizer.zero_grad()
+            """
+            obtain_vectors_from_sentence(sent=list of words, include_unk=True)
+            : changes each word into an embedding, and returns a list of embeddings
+            padBatch(list of embedding lists, max_seq=None)
+            : for each batch, returns a tensor fixed to the max size, applies zero padding
+            """
             inputs = torch.tensor(padBatch([em.obtain_vectors_from_sentence(sent, True) for sent in X_b])).float()
+            # here, inputs become a tensor of shape (B * seq_len * dim)
             targets = torch.tensor(y_b, dtype=torch.float32)
             if is_cuda:
                 inputs, targets = inputs.cuda(), targets.cuda()
             outputs = model(inputs)
             loss = loss_fn(outputs, targets)  # error here
-            optimizer.zero_grad()
             loss.backward()
             tr_loss += loss.item()
             optimizer.step()
@@ -148,14 +161,15 @@ def train(dim, args):
         current_loss = 0.0
         X_d, y_d = shuffle(X_d, y_d)
         val_batches = batchify(X_d, y_d, batch_size)
-        for X_b, y_b in val_batches:
-            inputs = torch.tensor(padBatch([em.obtain_vectors_from_sentence(sent, True) for sent in X_b])).float()
-            targets = torch.tensor(y_b, dtype=torch.float32)
-            if is_cuda:
-                inputs, targets = inputs.cuda(), targets.cuda()
-            outputs = model(inputs)
-            loss = loss_fn(outputs, targets)  # error here
-            current_loss += loss.item()
+        with torch.no_grad():
+            for X_b, y_b in val_batches:
+                inputs = torch.tensor(padBatch([em.obtain_vectors_from_sentence(sent, True) for sent in X_b])).float()
+                targets = torch.tensor(y_b, dtype=torch.float32)
+                if is_cuda:
+                    inputs, targets = inputs.cuda(), targets.cuda()
+                outputs = model(inputs)
+                loss = loss_fn(outputs, targets)  # error here
+                current_loss += loss.item()
 
         print("[Epoch %d] validation loss: %1.3f" % (epoch, current_loss))
         if current_loss<old_val:
@@ -186,7 +200,7 @@ def test(dim, args):
     is_cuda = True
     batch_size = 60
     embedding_dim = 300
-    hidden_dim = 300
+    hidden_dim = args.hidden_dim
     weight_dir = 'weights/LSTM/%s'%dim
     weight_file = join(weight_dir,'best-weights.pth')
     assert os.path.exists(weight_file),"The file directory for the saved model doesn't exist"
@@ -208,13 +222,15 @@ def test(dim, args):
     y_scores = []
     X_t, y_t = shuffle(X_t, y_t)
     val_batches = batchify(X_t, y_t, batch_size)
-    for X_b, y_b in val_batches:
-        inputs = torch.tensor(padBatch([em.obtain_vectors_from_sentence(sent, True) for sent in X_b])).float()
-        targets = torch.tensor(y_b, dtype=torch.float32)
-        if is_cuda:
-            inputs, targets = inputs.cuda(), targets.cuda()
-        outputs = model(inputs).tolist()
-        y_scores.extend(outputs)
+    model.eval()
+    with torch.no_grad():
+        for X_b, y_b in val_batches:
+            inputs = torch.tensor(padBatch([em.obtain_vectors_from_sentence(sent, True) for sent in X_b])).float()
+            targets = torch.tensor(y_b, dtype=torch.float32)
+            if is_cuda:
+                inputs, targets = inputs.cuda(), targets.cuda()
+            outputs = model(inputs).tolist()
+            y_scores.extend(outputs)
     y_preds = np.array(np.array(y_scores)>=0.5,dtype=int)
     auc = roc_auc_score(y_true=y_t, y_score=y_scores)
     rec = recall_score(y_true=y_t, y_pred=y_preds)
