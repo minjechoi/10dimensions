@@ -12,7 +12,7 @@ def main():
 
     parser.add_argument("--do_train", action='store_true', help="Whether to do training")
     parser.add_argument("--do_eval", action='store_true', help="Whether to do validation")
-    parser.add_argument('--lr', type=float, default=0.001, help="Learning rate for LSTM model")
+    parser.add_argument('--lr', type=float, default=0.0003, help="Learning rate for LSTM model")
     parser.add_argument('--hidden_dim', type=int, default=300, help="Size of hidden layer in LSTM model")
     parser.add_argument('--max_epochs', type=int, default=100, help="The maximum number of epochs to run (allows early stopping)")
 
