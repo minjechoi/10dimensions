@@ -20,11 +20,9 @@ class LSTMClassifier(nn.Module):
         """
         lengths = (batch!=0).sum(1)[:,0] # lengths of non-padded items
         lstm_outs, _ = self.lstm(batch) # [b x seq x dim]
-        out = torch.stack([lstm_outs[i,idx-1] for i,idx in enumerate(lengths)])
+        out = torch.stack([lstm_outs[i,idx-1] for i,idx in enumerate(lengths)]) # set on the last hidden state
         out = self.W_out(out)
-        # print(out.size())
         out = out.squeeze(-1)
-        # print(out.size())
         out = torch.sigmoid(out)
         return out
 
