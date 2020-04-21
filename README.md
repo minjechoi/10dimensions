@@ -19,11 +19,19 @@ Public repository containing the dataset and code for training the models in "Te
 ### Citation
 If using the package for research purposes, please cite the following work. (Will be updated upon publication)
 
-@misc{choi2020social,
-    title={Ten Social Dimensions of Conversations and Relationships},
-    author={Minje Choi and Luca Maria Aiello and Krisztian Zsolt Varga and Daniele Quercia},
-    year={2020},
-    eprint={2001.09954},
-    archivePrefix={arXiv},
-    primaryClass={cs.CY}
+@inproceedings{10.1145/3366423.3380224,
+author = {Choi, Minje and Aiello, Luca Maria and Varga, Kriszti\'{a}n Zsolt and Quercia, Daniele},
+title = {Ten Social Dimensions of Conversations and Relationships},
+year = {2020},
+isbn = {9781450370233},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3366423.3380224},
+doi = {10.1145/3366423.3380224},
+booktitle = {Proceedings of The Web Conference 2020},
+pages = {1514–1525},
+numpages = {12},
+keywords = {conversations, NLP, twitter, reddit, tinghy, enron, social relationships},
+location = {Taipei, Taiwan},
+series = {WWW ’20}
 }
