@@ -1,5 +1,5 @@
 # 10dimensions
-Public repository containing the dataset and code for training the models in "Ten Social Dimensions of Conversations and Relationships" (WWW'20) [paper](https://arxiv.org/abs/2001.09954)
+Public repository containing the dataset and code for training the models in "Ten Social Dimensions of Conversations and Relationships" (WWW'20) [paper](https://dl.acm.org/doi/abs/10.1145/3366423.3380224)
 
 ### Requirements for code
 - The requirements can be found [here](requirements.txt)
