@@ -18,7 +18,7 @@ This is the directory where all the pretrained weights for models and word embed
   - [fun](http://minjechoi.com/data/www20/BERT/fun.zip)
   - [trust](http://minjechoi.com/data/www20/BERT/trust.zip)
   - [identity](http://minjechoi.com/data/www20/BERT/identity.zip)
-  - [similarity](http://minjechoi.com/data/www20/BERT/similarity.zip)
+  - [similarity](https://www.dropbox.com/s/mxz5vtgsztvwarv/similarity.zip?dl=0)
 
 2. Extract the zip file and place all the contents in weights/BERT/##dimension_name##/.
   - e.g., for conflict, the weights should be stored in weights/BERT/conflict/pytorch_model.bin
