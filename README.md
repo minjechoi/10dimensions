@@ -17,7 +17,7 @@ Public repository containing the dataset and code for training the models in "Te
 - Run train_BERT.py or train_LSTM.py to train the model for each of the 10 dimensions. The dimensions can be modified in the __main__ function.
 
 ### Citation
-If using the package for research purposes, please cite the following work. (Will be updated upon publication)
+If using the package for research purposes, please cite the following work.
 
 @inproceedings{10.1145/3366423.3380224,
 author = {Choi, Minje and Aiello, Luca Maria and Varga, Kriszti\'{a}n Zsolt and Quercia, Daniele},
